@@ -1,0 +1,24 @@
+body {
+  background-color: #eff7de;
+}
+#date{
+    margin:10px auto auto auto;
+    width:400px;
+    height:auto;
+}
+#image{
+    margin:auto;
+    height:55px;
+    width:80px;
+}
+img{
+    height:55px;
+    width:80px;
+}
+p, h1, form{
+    text-align: center;
+}
+
+input{
+    margin: 5px auto;
+}
