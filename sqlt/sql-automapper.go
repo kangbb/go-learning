@@ -6,6 +6,7 @@ import (
 	"strings"
 	"regexp"
 	"time"
+	//"fmt"
 )
 
 type TypeChange struct{
@@ -120,31 +121,114 @@ func (am *SQLAutoMapper) Find(t reflect.Type, subSQL string, args ...interface{}
 	if t.Kind() == reflect.Ptr{
 		t = t.Elem()
 	}
+	T := reflect.New(t).Elem()
+	count := T.NumField()
 
-	rows, err := am.tpl.Query(subSQL, args...)
+	valuePtrs := make([]interface{}, count)
+	values := make([]interface{}, count)
+    resultList := make([]interface{},0,0)
+	if T.NumField() != count{
+		return nil, errors.New("TypeError: "+t.String()+" is invalid for this table")
+	}
+
+	for i := 0; i < count; i++ {
+		valuePtrs[i] = &values[i]
+	}
+	var findall = func(rscanner RowScanner) error{
+		result := make([]interface{}, count)
+		err := rscanner.Scan(valuePtrs...)
+		if err != nil{
+			return err
+		}
+
+		for i := 0; i < count; i++{
+			var v interface{}
+			val := values[i]
+			b, ok := val.([]byte)
+
+			if ok {
+				v = string(b)
+			} else {
+				v = val
+			}
+
+			if T.Field(i).Type().String() == "*time.Time" || T.Field(i).Type().String() == "time.Time"{
+				createtime, err := time.Parse("2006-01-02 15:04:05", string(b))
+				if err != nil{
+					return err
+				}else{
+					result[i] = createtime
+		        }
+			    continue
+	        }
+	        result[i] = v
+	    }
+		resultList = append(resultList, result)
+		return nil
+	}
+	err := am.tpl.Select(subSQL, findall, args...)
 	if err != nil{
 		return nil, err
 	}
-	defer rows.Close()
-
-	columns, _ := rows.Columns()
-	count := len(columns)
-
-    resultList := make([]interface{},0,0)
-    result := make([]interface{}, count)
-	if reflect.New(t).Elem().NumField() != count{
-		return nil, errors.New("TypeError: "+t.String()+" is invalid for this table")
-	}
-	for rows.Next() {
-        err = Scanner(rows, reflect.New(t).Elem(), &result)
-        if err != nil{
-        	return nil, errors.New("Scanner: "+ err.Error())
-		}
-        resultList = append(resultList, result)
-	}
-
 	return resultList, nil
 }
+
+//FindOne
+func (am *SQLAutoMapper) FindOne(t reflect.Type, subSQL string, args ...interface{}) (interface{}, error) {
+	if t.Kind() == reflect.Ptr{
+		t = t.Elem()
+	}
+	T := reflect.New(t).Elem()
+	count := T.NumField()
+
+	valuePtrs := make([]interface{}, count)
+	values := make([]interface{}, count)
+	result := make([]interface{}, count)
+	if T.NumField() != count{
+		return nil, errors.New("TypeError: "+t.String()+" is invalid for this table")
+	}
+
+	for i := 0; i < count; i++ {
+		valuePtrs[i] = &values[i]
+	}
+	var findone = func(rscanner RowScanner) error{
+		err := rscanner.Scan(valuePtrs...)
+		if err != nil{
+			return err
+		}
+
+		for i := 0; i < count; i++{
+			var v interface{}
+			val := values[i]
+			b, ok := val.([]byte)
+
+			if ok {
+				v = string(b)
+			} else {
+				v = val
+			}
+
+			if T.Field(i).Type().String() == "*time.Time" || T.Field(i).Type().String() == "time.Time"{
+				createtime, err := time.Parse("2006-01-02 15:04:05", string(b))
+				if err != nil{
+					return err
+				}else{
+					result[i] = createtime
+				}
+				continue
+			}
+			result[i] = v
+		}
+		return nil
+	}
+	err := am.tpl.SelectOne(subSQL, findone, args...)
+	if err != nil{
+		return nil, err
+	}
+	return result, nil
+}
+
+//Update
 
 //initial TypeChange
 func NewTypeChange() *TypeChange {
@@ -192,41 +276,4 @@ func (tc *TypeChange)TagExistType(s string) bool{
 	}
 
 	return false
-}
-
-func Scanner(scanner RowScanner, value reflect.Value, result interface{}) error {
-	valuePtrs := make([]interface{}, value.NumField())
-	values := make([]interface{}, value.NumField())
-	for i := 0; i < value.NumField(); i++ {
-		valuePtrs[i] = &values[i]
-	}
-	err := scanner.Scan(valuePtrs...)
-	if err != nil{
-		return err
-	}
-
-    for i := 0; i < value.NumField(); i++{
-		var v interface{}
-		val := values[i]
-		b, ok := val.([]byte)
-
-		if ok {
-			v = string(b)
-		} else {
-			v = val
-		}
-
-		r, ok := result.(*[]interface{})
-		if value.Field(i).Type().String() == "*time.Time" || value.Field(i).Type().String() == "time.Time"{
-			mytime, err := time.Parse("2006-01-02 15:04:05", string(b))
-			if err != nil{
-				return err
-			}else{
-				(*r)[i] = mytime
-			}
-			continue
-		}
-		(*r)[i] = v
-	}
-	return nil
 }

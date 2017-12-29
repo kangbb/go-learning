@@ -6,7 +6,7 @@
 1.连接数据库
 2.创建Table
 3.向Table插入数据
-4.查询数据 
+4.查询数据(一条或多条)
 ```
 ### 使用方式
 - **创建数据库连接**
@@ -45,9 +45,18 @@ if err != nil{
 ```
 //查询语句支持SQL原生语句
 //lists类型为slice
+
+//查询所有数据
 lists, err :=db.Find(reflect.TypeOf(new(UserInfo)), "SELECT * FROM userinfo")
 if err != nil{
     panic(err)
 }
 fmt.Println(lists)
+
+//查询一条数据
+list, err :=db.FindOne(reflect.TypeOf(new(UserInfo)), "SELECT * FROM userinfo")
+if err != nil{
+    panic(err)
+}
+fmt.Println(list)
 ```
