@@ -49,7 +49,7 @@ func useNewScanner(filename string) {
 		fmt.Printf("the line %d: %s\n", count, sc.Text())
 	}
 	if err := sc.Err(); err != nil {
-		fmt.Prinfln("An error has hippened")
+		fmt.Println("An error has hippened")
 	}
 }
 
