@@ -19,15 +19,24 @@ func main()  {
 	if err != nil {
 		panic(err)
 	}
-	//t := time.Now()
-	//user := UserInfo{UID:3, UserName:"kangbb", DepartName:"School", CreateAt:&t}
+	t := time.Now()
+
+	user := UserInfo{UID:6, UserName:"kangbb", DepartName:"School", CreateAt:&t}
 	db, err := energine.RegisterTable(new(UserInfo), "userinfo")
 	if err != nil{
 		panic(err)
 	}
-	//err = db.Save(user)
+	err = db.Save(user)
+	if err != nil{
+		panic(err)
+	}
+
+	//lists, err :=db.Find(reflect.TypeOf(new(UserInfo)), "SELECT * FROM userinfo")
 	//if err != nil{
 	//	panic(err)
+	//}
+	//for _, v:= range lists{
+	//	fmt.Println(v)
 	//}
 
 	list, err :=db.FindOne(reflect.TypeOf(new(UserInfo)), "SELECT * FROM userinfo")
@@ -35,4 +44,5 @@ func main()  {
 		panic(err)
 	}
 	fmt.Println(list)
+
 }

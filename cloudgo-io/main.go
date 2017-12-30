@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"cloudgo-io/service"
+	"github.com/kangbb/go-learning/cloudgo-io/service"
 	flag "github.com/spf13/pflag"
 )
 

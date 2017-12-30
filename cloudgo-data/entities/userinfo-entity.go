@@ -9,6 +9,13 @@ type UserInfo struct {
 	UserName   string
 	DepartName string
 	CreateAt   *time.Time
+    MyInfo       Info
+}
+type Info struct{
+	Age int `xorm:"autoincr pk"`
+	School string
+	Father string
+	Mother string
 }
 // NewUserInfo .
 func NewUserInfo(u UserInfo) *UserInfo {
