@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "Hello/routers"
+	_ "github.com/kangbb/go-learning/cloudgo/routers"
 
 	"github.com/astaxie/beego"
 )

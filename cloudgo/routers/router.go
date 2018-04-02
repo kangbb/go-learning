@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"Hello/controllers"
+	"github.com/kangbb/go-learning/cloudgo/controllers"
 
 	"github.com/astaxie/beego"
 )
